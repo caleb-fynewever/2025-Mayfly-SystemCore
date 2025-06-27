@@ -5,16 +5,161 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.commands.arm.ArmCommandFactory;
+import frc.robot.commands.climber.ClimberCommandFactory;
+import frc.robot.commands.drive.DefaultDriveCommand;
+import frc.robot.commands.intake.IntakeCommandFactory;
+import frc.robot.commands.superstructure.SuperstructureCommandFactory;
+import frc.robot.controlboard.ControlBoard;
+import frc.robot.subsystems.arm.ArmPivotSubsystem;
+import frc.robot.subsystems.arm.ArmRollerSubsystem;
+import frc.robot.subsystems.drive.DrivetrainSubsystem;
+import frc.robot.subsystems.intake.IntakePivotSubsystem;
+import frc.robot.subsystems.intake.IntakeRollerSubsystem;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.ActionType;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 
 public class RobotContainer {
-  public RobotContainer() {
-    configureBindings();
-  }
+    private final ControlBoard controlBoard = ControlBoard.getInstance();
 
-  private void configureBindings() {}
+    public final RobotState robotState = RobotState.getInstance();
+    public final DrivetrainSubsystem drivetrain = DrivetrainSubsystem.getInstance();
+    public final SuperstructureSubsystem superstructure = SuperstructureSubsystem.getInstance();
+    public final ArmPivotSubsystem armPivot = ArmPivotSubsystem.getInstance();
+    public final ArmRollerSubsystem armRollers = ArmRollerSubsystem.getInstance();
+    public final IntakePivotSubsystem intakePivot = IntakePivotSubsystem.getInstance();
+    public final IntakeRollerSubsystem intakeRollers = IntakeRollerSubsystem.getInstance();
 
-  public Command getAutonomousCommand() {
-    return Commands.print("No autonomous command configured");
-  }
+    public static boolean deadReckoning = false;
+
+    public RobotContainer() {
+        drivetrain.setDefaultCommand(new DefaultDriveCommand(
+                controlBoard::getThrottle,
+                // Sideways velocity supplier.
+                controlBoard::getStrafe,
+                // Rotation velocity supplier.
+                controlBoard::getRotation,
+                () -> true));
+
+        configureBindings();
+    }
+
+    private void configureBindings() {
+        /* Primary Driver */
+        configurePOVBindings();
+
+        controlBoard
+                .groundIntakeHold()
+                .onTrue(IntakeCommandFactory.setHoldCoral(true))
+                .onFalse(IntakeCommandFactory.setHoldCoral(false));
+
+        controlBoard.resetGyro().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
+
+        controlBoard
+                .intake()
+                .onTrue(new ConditionalCommand(
+                        new InstantCommand(),
+                        new InstantCommand(() -> superstructure.setCurrentAction(TargetAction.INTAKE)),
+                        () -> superstructure.getCurrentAction().getType() == ActionType.ALGAE))
+                .whileTrue(new ConditionalCommand(
+                        ArmCommandFactory.algaeIn(),
+                        ArmCommandFactory.intake(),
+                        () -> intakeRollers.tryingToHoldCoral()
+                                || superstructure.getCurrentAction().getType() == ActionType.ALGAE))
+                .whileTrue(new ConditionalCommand(
+                        new InstantCommand(),
+                        IntakeCommandFactory.intake(),
+                        () -> superstructure.getCurrentAction().getType() == ActionType.ALGAE));
+
+        controlBoard
+                .outtake()
+                .whileTrue(ArmCommandFactory.outtake())
+                .onFalse(new InstantCommand(() -> superstructure.stow()));
+
+        controlBoard.armRollerTapIn().whileTrue(ArmCommandFactory.coralIn());
+
+        controlBoard
+                .groundOuttake()
+                .whileTrue(IntakeCommandFactory.outtake())
+                .onFalse(new InstantCommand(() -> superstructure.stow()));
+
+        controlBoard.confirmSuperstructure().onTrue(superstructure.confirm());
+
+        /* Secondary Driver */
+        controlBoard.actTrigger().onTrue(superstructure.confirm());
+
+        controlBoard.setGoalCL().onTrue(superstructure.set(TargetAction.CLIMB, true));
+        controlBoard
+                .setGoalL1H()
+                .onTrue(superstructure.set(TargetAction.L1H, false));
+        controlBoard.setGoalL2().onTrue(superstructure.set(TargetAction.L2, false));
+        controlBoard.setGoalL3().onTrue(superstructure.set(TargetAction.L3, false));
+        controlBoard.setGoalL4().onTrue(superstructure.set(TargetAction.L4, false));
+        controlBoard
+                .setGoalLowerAlgae()
+                .onTrue(superstructure.set(TargetAction.LOWER_ALGAE, false));
+        controlBoard
+                .setGoalUpperAlgae()
+                .onTrue(superstructure.set(TargetAction.UPPER_ALGAE, false));
+
+        controlBoard.setGoalCoralStation().onTrue(superstructure.set(TargetAction.SPOOKY_STOW, false));
+        controlBoard.homeElevator().onTrue(superstructure.set(TargetAction.HOME, false));
+
+        controlBoard.climbUp().whileTrue(ClimberCommandFactory.climberUp());
+        controlBoard.climbDown().whileTrue(ClimberCommandFactory.climberDown());
+
+        controlBoard.algaeScoreAngle().onTrue(superstructure.set(TargetAction.ALGAE_NET, false));
+        controlBoard.algaeLowAngle().onTrue(superstructure.set(TargetAction.ALGAE_PROCESS, false));
+
+        controlBoard.loadingStation().onTrue(superstructure.set(TargetAction.HP, false));
+        controlBoard.unJam().onTrue(superstructure.set(TargetAction.UN_JAM, false));
+
+        /* SysID */
+        controlBoard.sysIDDynamicForward().onTrue(SuperstructureCommandFactory.setCoast());
+        controlBoard.sysIDDynamicReverse().onTrue(SuperstructureCommandFactory.setBrake());
+        // controlBoard.sysIDQuasiForward().whileTrue(intakePivot.sysIdQuasistatic(Direction.kForward));
+        // controlBoard.sysIDQuasiReverse().whileTrue(intakePivot.sysIdQuasistatic(Direction.kReverse));
+        // controlBoard.sysIDDynamicForward().whileTrue(intakePivot.sysIdDynamic(Direction.kForward));
+        // controlBoard.sysIDDynamicReverse().whileTrue(intakePivot.sysIdDynamic(Direction.kReverse));
+        // controlBoard
+        //         .outtake()
+        //         .onTrue(Commands.runOnce(SignalLogger::start))
+        //         .onFalse(Commands.runOnce(SignalLogger::stop));
+    }
+
+    private void configurePOVBindings() {
+        ControlBoard controlBoard = ControlBoard.getInstance();
+
+        controlBoard.povUp().whileTrue(new DefaultDriveCommand(() -> 0.2, () -> 0.0, () -> 0.0, () -> false));
+        controlBoard.povUpRight().whileTrue(new DefaultDriveCommand(() -> 0.2, () -> -0.2, () -> 0.0, () -> false));
+
+        controlBoard.povRight().whileTrue(new DefaultDriveCommand(() -> 0.0, () -> -0.2, () -> 0.0, () -> false));
+
+        controlBoard.povDownRight().whileTrue(new DefaultDriveCommand(() -> -0.2, () -> -0.2, () -> 0.0, () -> false));
+
+        controlBoard.povDown().whileTrue(new DefaultDriveCommand(() -> -0.2, () -> 0.0, () -> 0.0, () -> false));
+
+        controlBoard.povDownLeft().whileTrue(new DefaultDriveCommand(() -> -0.2, () -> 0.2, () -> 0.0, () -> false));
+
+        controlBoard.povLeft().whileTrue(new DefaultDriveCommand(() -> 0.0, () -> 0.2, () -> 0.0, () -> false));
+
+        controlBoard.povUpLeft().whileTrue(new DefaultDriveCommand(() -> 0.2, () -> 0.2, () -> 0.0, () -> false));
+
+        System.out.println("POV Bindings Configured");
+    }
+
+    public Command getAutonomousCommand() {
+        return new InstantCommand();
+    }
+
+    public static boolean getDeadReckoning() {
+        return deadReckoning;
+    }
+
+    public static void setDeadReckoning(boolean isDeadReckoning) {
+        deadReckoning = isDeadReckoning;
+    }
 }
