@@ -72,7 +72,9 @@ public class RobotContainer {
                 .whileTrue(new ConditionalCommand(
                         new InstantCommand(),
                         IntakeCommandFactory.intake(),
-                        () -> superstructure.getCurrentAction().getType() == ActionType.ALGAE));
+                        () -> superstructure.getCurrentAction().getType() == ActionType.ALGAE))
+                .onFalse(new InstantCommand(() -> superstructure.stow()));
+                
 
         controlBoard
                 .outtake()

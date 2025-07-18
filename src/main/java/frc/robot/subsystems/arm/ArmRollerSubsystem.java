@@ -33,7 +33,7 @@ public class ArmRollerSubsystem extends SubsystemBase {
     }
 
     private ArmRollerSubsystem() {
-        motor = new TalonFX(Ports.ARM_ROLLER_TALONFX_ID, "can_s1");
+        motor = new TalonFX(Ports.ARM_ROLLER_TALONFX_ID.getId(), Ports.ARM_ROLLER_TALONFX_ID.getLoop());
         beamBreak = new DigitalInput(Ports.CORAL_BEAM_BREAK_PIN);
         // range = new CANrange(Ports.ARM_ROLLER_CANRANGE_ID);
 

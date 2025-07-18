@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
@@ -53,10 +55,10 @@ public class IntakePivotSubsystem extends SubsystemBase {
 
     private IntakePivotSubsystem() {
         goalPosition = TargetAction.STOW.getIntakePivotPosition();
-        pivotMotor = new TalonFX(Ports.INTAKE_PIVOT_ID, "can_s1");
+        pivotMotor = new TalonFX(Ports.INTAKE_PIVOT_ID.getId(), Ports.INTAKE_PIVOT_ID.getLoop());
         pivotMotor.getConfigurator().apply(IntakePivotConstants.MOTOR_CONFIG);
 
-        encoder = new CANcoder(Ports.INTAKE_ENCODER_ID);
+        encoder = new CANcoder(Ports.INTAKE_ENCODER_ID.getId(), Ports.INTAKE_ENCODER_ID.getLoop());
         CANcoderConfiguration armEncoderConfig = new CANcoderConfiguration();
         armEncoderConfig.MagnetSensor.AbsoluteSensorDiscontinuityPoint = 0.5;
         armEncoderConfig.MagnetSensor.SensorDirection = SensorDirectionValue.Clockwise_Positive;
@@ -121,10 +123,10 @@ public class IntakePivotSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // Logger.recordOutput("Intake Pivot/Angle", getPosition());
-        // Logger.recordOutput("Intake Pivot/Goal Angle", goalPosition);
-        // Logger.recordOutput("Intake Pivot/Setpoint", setpoint.position);
-        // Logger.recordOutput("Intake Pivot/Motor TICKS", pivotMotor.getPosition().getValueAsDouble());
+        Logger.recordOutput("Intake Pivot/Angle", getPosition());
+        Logger.recordOutput("Intake Pivot/Goal Angle", goalPosition);
+        Logger.recordOutput("Intake Pivot/Setpoint", setpoint.position);
+        Logger.recordOutput("Intake Pivot/Motor TICKS", pivotMotor.getPosition().getValueAsDouble());
 
         if (DriverStation.isDisabled()) {
             pivotMotor.stopMotor();

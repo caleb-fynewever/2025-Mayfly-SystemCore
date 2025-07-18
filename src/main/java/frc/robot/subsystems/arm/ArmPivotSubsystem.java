@@ -8,6 +8,8 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Volts;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -15,6 +17,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -39,7 +42,7 @@ public class ArmPivotSubsystem extends SubsystemBase {
     private ArmPivotSubsystem() {
         goalPosition = TargetAction.STOW.getArmPivotAngle();
 
-        pivotMotor = new TalonFX(Ports.ARM_TALONFX_ID, "can_s1");
+        pivotMotor = new TalonFX(Ports.ARM_TALONFX_ID.getId(), Ports.ARM_TALONFX_ID.getLoop());
 
         pivotMotor.getConfigurator().apply(ArmPivotConstants.MOTOR_CONFIG);
     }
@@ -115,6 +118,7 @@ public class ArmPivotSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        SmartDashboard.putNumber("Arm Pivot Position", pivotMotor.getPosition().getValueAsDouble());
         if (DriverStation.isDisabled()) {
             goalPosition = getPosition();
         }

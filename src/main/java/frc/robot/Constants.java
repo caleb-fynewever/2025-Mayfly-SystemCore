@@ -181,7 +181,7 @@ public class Constants {
 
     public static final FeedbackConfigs FEEDBACK_CONFIG =
         new FeedbackConfigs()
-            .withFeedbackRemoteSensorID(Ports.ARM_CANCODER_ID)
+            .withFeedbackRemoteSensorID(Ports.ARM_CANCODER_ID.getId())
             .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder)
             .withRotorToSensorRatio(99.556)
             .withSensorToMechanismRatio(1);

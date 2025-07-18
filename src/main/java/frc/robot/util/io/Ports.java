@@ -1,20 +1,23 @@
 package frc.robot.util.io;
 
+import com.team2052.lib.motor.CANItem;
+
 public class Ports {
     /*
      *  CAN IDS
      */
     /*
-     * Bus: RoboRio
+     * Bus: SystemCore
      */
-    public static final int ARM_CANCODER_ID = 1;
-    public static final int ARM_TALONFX_ID = 2;
+    public static final String MAINLOOP = "can_s1";
+    public static final CANItem ARM_CANCODER_ID = new CANItem(1, MAINLOOP);
+    public static final CANItem ARM_TALONFX_ID = new CANItem(2, MAINLOOP);
 
-    public static final int ARM_ROLLER_TALONFX_ID = 3;
+    public static final CANItem ARM_ROLLER_TALONFX_ID = new CANItem(3, MAINLOOP);
 
-    public static final int INTAKE_ROLLER_ID = 5;
-    public static final int INTAKE_PIVOT_ID = 6;
-    public static final int INTAKE_ENCODER_ID = 7;
+    public static final CANItem INTAKE_ROLLER_ID = new CANItem(5, MAINLOOP);
+    public static final CANItem INTAKE_PIVOT_ID = new CANItem(6, MAINLOOP);
+    public static final CANItem INTAKE_ENCODER_ID = new CANItem(7, MAINLOOP);
 
     /*
      *  Bus: Krawlivore
