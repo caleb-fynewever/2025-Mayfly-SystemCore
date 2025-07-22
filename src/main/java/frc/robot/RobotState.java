@@ -5,12 +5,15 @@ import com.team2052.lib.helpers.MathHelpers;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.drive.alignment.AlignmentCommandFactory;
 import frc.robot.subsystems.arm.ArmRollerSubsystem;
 import frc.robot.subsystems.intake.IntakeRollerSubsystem;
 import frc.robot.util.AlignmentCalculator.AlignOffset;
 import frc.robot.util.AlignmentCalculator.FieldElementFace;
 import frc.robot.util.FieldConstants;
+import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
     private SwerveDriveState drivetrainState = new SwerveDriveState();
@@ -92,7 +95,9 @@ public class RobotState {
         return desiredReefFace.getTagID() == seenReefFace.getTagID();
     }
 
-
+    public Command setAlignOffsetCommand(AlignOffset offset) {
+        return new InstantCommand(() -> setAlignOffset(offset));
+    }
 
     public void addDrivetrainState(SwerveDriveState drivetrainState) {
         this.drivetrainState = drivetrainState;
@@ -121,5 +126,17 @@ public class RobotState {
     }
 
     public void output() {
+        Logger.recordOutput("Swerve Module States", drivetrainState.ModuleStates);
+        Logger.recordOutput("Swerve Module Goals", drivetrainState.ModuleTargets);
+        Logger.recordOutput("Current Pose", drivetrainState.Pose);
+        Logger.recordOutput("Goal Align Pose", getAlignPose());
+        Logger.recordOutput(
+                "Goal Left Alignment",
+                getFieldToRobot()
+                        .nearest(isRedAlliance() ? FieldConstants.redLeftBranches : FieldConstants.blueLeftBranches));
+        Logger.recordOutput(
+                "Goal Right Alignment",
+                getFieldToRobot()
+                        .nearest(isRedAlliance() ? FieldConstants.redRightBranches : FieldConstants.blueRightBranches));
     }
 }

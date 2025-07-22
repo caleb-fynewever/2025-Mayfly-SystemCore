@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.arm.ArmCommandFactory;
 import frc.robot.commands.climber.ClimberCommandFactory;
 import frc.robot.commands.drive.DefaultDriveCommand;
+import frc.robot.commands.drive.alignment.AlignmentCommandFactory;
 import frc.robot.commands.intake.IntakeCommandFactory;
 import frc.robot.commands.superstructure.SuperstructureCommandFactory;
 import frc.robot.controlboard.ControlBoard;
@@ -20,6 +21,8 @@ import frc.robot.subsystems.intake.IntakePivotSubsystem;
 import frc.robot.subsystems.intake.IntakeRollerSubsystem;
 import frc.robot.subsystems.superstructure.SuperstructurePosition.ActionType;
 import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.vision.VisionSubsystem;
+import frc.robot.util.AlignmentCalculator.AlignOffset;
 import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 
 public class RobotContainer {
@@ -32,6 +35,7 @@ public class RobotContainer {
     public final ArmRollerSubsystem armRollers = ArmRollerSubsystem.getInstance();
     public final IntakePivotSubsystem intakePivot = IntakePivotSubsystem.getInstance();
     public final IntakeRollerSubsystem intakeRollers = IntakeRollerSubsystem.getInstance();
+    public final VisionSubsystem vision = VisionSubsystem.getInstance();
 
     public static boolean deadReckoning = false;
 
@@ -87,6 +91,16 @@ public class RobotContainer {
                 .onFalse(new InstantCommand(() -> superstructure.stow()));
 
         controlBoard.confirmSuperstructure().onTrue(superstructure.confirm());
+
+        controlBoard
+                .alignWithReefLeft()
+                .whileTrue(AlignmentCommandFactory.getReefAlignmentCommand(() -> AlignOffset.LEFT_BRANCH))
+                .onFalse(robotState.setAlignOffsetCommand(AlignOffset.MIDDLE_REEF));
+
+        controlBoard
+                .alignWithReefRight()
+                .whileTrue(AlignmentCommandFactory.getReefAlignmentCommand(() -> AlignOffset.RIGHT_BRANCH))
+                .onFalse(robotState.setAlignOffsetCommand(AlignOffset.MIDDLE_REEF));
 
         /* Secondary Driver */
         controlBoard.actTrigger().onTrue(superstructure.confirm());

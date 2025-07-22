@@ -9,14 +9,26 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
 
-public class Robot extends TimedRobot {
+public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
   private TalonFX testMotor;
 
   private final RobotContainer m_robotContainer;
 
   public Robot() {
+    Logger.recordMetadata("ProjectName", "Mayfly-Systemcore"); // Set a metadata value
+
+    if (isReal()) {
+        Logger.addDataReceiver(new NT4Publisher()); // Publish data to NetworkTables
+    } else {
+        setUseTiming(false); // Run as fast as possible
+    }
+    
+    Logger.start(); 
     m_robotContainer = new RobotContainer();
     testMotor = new TalonFX(11, "can_s0");
   }
@@ -24,6 +36,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
+    RobotState.getInstance().output();
   }
 
   @Override
