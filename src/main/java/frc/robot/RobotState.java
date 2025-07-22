@@ -6,6 +6,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.commands.drive.alignment.AlignmentCommandFactory;
+import frc.robot.subsystems.arm.ArmRollerSubsystem;
+import frc.robot.subsystems.intake.IntakeRollerSubsystem;
 import frc.robot.util.AlignmentCalculator.AlignOffset;
 import frc.robot.util.AlignmentCalculator.FieldElementFace;
 import frc.robot.util.FieldConstants;
@@ -38,7 +40,7 @@ public class RobotState {
     }
 
     public boolean getHasCoral() {
-        return false; //TODO: fix this
+        return ArmRollerSubsystem.getInstance().getHasCoral();
     }
 
     public void setAlignOffset(AlignOffset offset) {

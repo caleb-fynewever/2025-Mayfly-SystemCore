@@ -6,7 +6,10 @@ package frc.robot.subsystems.intake;
 
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
+
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeRollerConstants;
 import frc.robot.subsystems.ElevatorSubsystem;
@@ -17,7 +20,7 @@ import frc.robot.util.io.Ports;
 
 public class IntakeRollerSubsystem extends SubsystemBase {
     private final TalonFX motor;
-    private final DigitalInput beamBreak;
+    private final AnalogInput beamBreak;
     private boolean holdCoral = false;
     private boolean attemptingToIntake = false;
     private final VelocityTorqueCurrentFOC m_velocityTorque = new VelocityTorqueCurrentFOC(0).withSlot(0);
@@ -32,7 +35,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     }
 
     private IntakeRollerSubsystem() {
-        beamBreak = new DigitalInput(Ports.INTAKE_BEAM_BREAK_ID);
+        beamBreak = new AnalogInput(Ports.INTAKE_BEAM_BREAK_ID);
         motor = new TalonFX(Ports.INTAKE_ROLLER_ID.getId(), Ports.INTAKE_ROLLER_ID.getLoop());
         motor.getConfigurator().apply(IntakeRollerConstants.MOTOR_CONFIG);
     }
@@ -67,12 +70,14 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     }
 
     public boolean isBeamBreakHit() {
-        return false;
+        return beamBreak.getVoltage() > 0.4;
         // return !beamBreak.get();
     }
 
     @Override
-    public void periodic() {
+    public void periodic() {        
+        SmartDashboard.putNumber("Intake/Beam Break Value", beamBreak.getVoltage());
+
         // Logger.recordOutput("Intake Rollers/Beam Break Hit", isBeamBreakHit());
         // Logger.recordOutput("Intake Rollers/Holding Coral", isHoldingCoral());
         // Logger.recordOutput("Intake Rollers/Trying to hold Coral", tryingToHoldCoral());

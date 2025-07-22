@@ -30,8 +30,8 @@ public class Ports {
     /*
      *  DIO
      */
-    public static final int CORAL_BEAM_BREAK_PIN = 4;
-    public static final int INTAKE_BEAM_BREAK_ID = 3;
+    public static final int CORAL_BEAM_BREAK_PIN = 1;
+    public static final int INTAKE_BEAM_BREAK_ID = 2;
 
     public static final int LED_CHANNEL_1_PIN = 5;
     public static final int LED_CHANNEL_2_PIN = 6;

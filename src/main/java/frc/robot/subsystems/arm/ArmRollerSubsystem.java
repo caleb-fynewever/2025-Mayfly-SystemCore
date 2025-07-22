@@ -6,8 +6,11 @@ package frc.robot.subsystems.arm;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.team2052.lib.util.DelayedBoolean;
+
+import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmRollerConstants;
 import frc.robot.RobotState;
@@ -18,7 +21,7 @@ import frc.robot.util.io.Ports;
 public class ArmRollerSubsystem extends SubsystemBase {
     private final TalonFX motor;
     // private final CANrange range;
-    private final DigitalInput beamBreak;
+    private final AnalogInput beamBreak;
     private static ArmRollerSubsystem INSTANCE;
     private boolean isIntaking = false;
 
@@ -34,7 +37,7 @@ public class ArmRollerSubsystem extends SubsystemBase {
 
     private ArmRollerSubsystem() {
         motor = new TalonFX(Ports.ARM_ROLLER_TALONFX_ID.getId(), Ports.ARM_ROLLER_TALONFX_ID.getLoop());
-        beamBreak = new DigitalInput(Ports.CORAL_BEAM_BREAK_PIN);
+        beamBreak = new AnalogInput(Ports.CORAL_BEAM_BREAK_PIN);
         // range = new CANrange(Ports.ARM_ROLLER_CANRANGE_ID);
 
         // range.getConfigurator().apply(ArmRollerConstants.CANRANGE_CONFIG);
@@ -79,12 +82,16 @@ public class ArmRollerSubsystem extends SubsystemBase {
     }
 
     public boolean beamBreakHit() {
-        return false;
-        // return !beamBreak.get();
+        return beamBreak.getVoltage() > 0.4;
+    }
+
+    public boolean getHasCoral() {
+        return hasCoral;
     }
 
     @Override
     public void periodic() {
+        SmartDashboard.putNumber("Arm/Beam Break Value", beamBreak.getVoltage());
         hasCoral = hasCoralDelay.update(Timer.getFPGATimestamp(), beamBreakHit());
     }
 }
