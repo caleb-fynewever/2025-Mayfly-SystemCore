@@ -344,7 +344,7 @@ public class Constants {
 
   public static class VisionConstants {
     public static final double DEFAULT_XY_STDDEV = 0.1;
-    public static final double DEFAULT_HEADING_STDDEV = 0.1;
+    public static final double DEFAULT_HEADING_STDDEV = 99999;
     public static final Matrix<N3, N1> VISION_STDDEV =  new Matrix<>(VecBuilder.fill(DEFAULT_XY_STDDEV, DEFAULT_XY_STDDEV, DEFAULT_HEADING_STDDEV));
 
     public static final double MAX_POSE_AMBIGUITY = 0.15;
