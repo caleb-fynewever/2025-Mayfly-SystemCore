@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meter;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
@@ -17,11 +20,13 @@ import frc.robot.controlboard.ControlBoard;
 import frc.robot.subsystems.arm.ArmPivotSubsystem;
 import frc.robot.subsystems.arm.ArmRollerSubsystem;
 import frc.robot.subsystems.drive.DrivetrainSubsystem;
+import frc.robot.subsystems.drive.ctre.generated.TunerConstants;
 import frc.robot.subsystems.intake.IntakePivotSubsystem;
 import frc.robot.subsystems.intake.IntakeRollerSubsystem;
 import frc.robot.subsystems.superstructure.SuperstructurePosition.ActionType;
 import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import frc.robot.util.Telemetry;
 import frc.robot.util.AlignmentCalculator.AlignOffset;
 import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 
@@ -36,6 +41,7 @@ public class RobotContainer {
     public final IntakePivotSubsystem intakePivot = IntakePivotSubsystem.getInstance();
     public final IntakeRollerSubsystem intakeRollers = IntakeRollerSubsystem.getInstance();
     public final VisionSubsystem vision = VisionSubsystem.getInstance();
+    public final Telemetry telemetry = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
 
     public static boolean deadReckoning = false;
 
@@ -60,7 +66,9 @@ public class RobotContainer {
                 .onTrue(IntakeCommandFactory.setHoldCoral(true))
                 .onFalse(IntakeCommandFactory.setHoldCoral(false));
 
-        controlBoard.resetGyro().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
+        // controlBoard.resetGyro().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
+        
+        controlBoard.resetGyro().onTrue(new InstantCommand(() -> drivetrain.getPigeon2().reset()));
 
         controlBoard
                 .intake()

@@ -3,6 +3,8 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -18,6 +20,7 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.DrivetrainConstants;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.controlboard.ControlBoard;
 import frc.robot.Robot;
 import frc.robot.RobotState;
 import frc.robot.subsystems.drive.ctre.generated.TunerConstants.TunerSwerveDrivetrain;
@@ -82,6 +85,9 @@ public class DrivetrainSubsystem extends TunerSwerveDrivetrain implements Subsys
                 hasAppliedOperatorPerspective = true;
             });
         }
+
+        Logger.recordOutput("Pidgeon Value", getPigeon2().getRotation2d().getDegrees());
+        Logger.recordOutput("Odom Value", getStateCopy().Pose.getRotation().getDegrees());
 
         robotState.addDrivetrainState(super.getState());
     }
