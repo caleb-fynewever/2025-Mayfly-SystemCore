@@ -1,15 +1,17 @@
 package frc.robot.util.io;
 
+import com.ctre.phoenix6.CANBus;
 import com.team2052.lib.motor.CANItem;
 
 public class Ports {
     /*
      *  CAN IDS
      */
+    public static final CANBus LOWLOOP = new CANBus("*");
     /*
      * Bus: SystemCore
      */
-    public static final String MAINLOOP = "can_s1";
+    public static final CANBus MAINLOOP = CANBus.systemCore(0);
     public static final CANItem ARM_CANCODER_ID = new CANItem(1, MAINLOOP);
     public static final CANItem ARM_TALONFX_ID = new CANItem(2, MAINLOOP);
 

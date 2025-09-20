@@ -4,9 +4,6 @@
 
 package frc.robot;
 
-import com.ctre.phoenix6.hardware.TalonFX;
-
-import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import org.littletonrobotics.junction.Logger;
@@ -15,7 +12,6 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
-  private TalonFX testMotor;
 
   private final RobotContainer m_robotContainer;
 
@@ -30,7 +26,6 @@ public class Robot extends LoggedRobot {
     
     Logger.start(); 
     m_robotContainer = new RobotContainer();
-    testMotor = new TalonFX(11, "can_s0");
   }
 
   @Override

@@ -1,10 +1,12 @@
 package com.team2052.lib.motor;
 
+import com.ctre.phoenix6.CANBus;
+
 public class CANItem {
     private int id;
-    private String loop;
+    private CANBus loop;
 
-    public CANItem (int id, String loop) {
+    public CANItem (int id, CANBus loop) {
         this.id = id;
         this.loop = loop;
     }
@@ -13,7 +15,7 @@ public class CANItem {
         return id;
     }
 
-    public String getLoop() {
+    public CANBus getLoop() {
         return loop;
     }
 }

@@ -6,6 +6,7 @@ package frc.robot.subsystems;
 
 import static edu.wpi.first.units.Units.Degrees;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionTorqueCurrentFOC;
@@ -54,8 +55,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     private ElevatorSubsystem() {
         goalPositionRotations = TargetAction.HOME.getElevatorPositionRotations();
 
-        frontMotor = new TalonFX(Ports.ELEVATOR_FRONT_ID, "Krawlivore");
-        backMotor = new TalonFX(Ports.ELEVATOR_BACK_ID, "Krawlivore");
+        frontMotor = new TalonFX(Ports.ELEVATOR_FRONT_ID, Ports.LOWLOOP);
+        backMotor = new TalonFX(Ports.ELEVATOR_BACK_ID, Ports.LOWLOOP);
 
         backMotor.getConfigurator().apply(ElevatorConstants.MOTOR_CONFIG);
         frontMotor.getConfigurator().apply(ElevatorConstants.MOTOR_CONFIG);
