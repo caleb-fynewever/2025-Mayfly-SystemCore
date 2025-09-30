@@ -4,12 +4,14 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Meter;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
+import frc.robot.auto.common.AutoFactory;
+import frc.robot.auto.modes.DeadReckoning;
+import frc.robot.auto.modes.MiddleH4;
 import frc.robot.commands.arm.ArmCommandFactory;
 import frc.robot.commands.climber.ClimberCommandFactory;
 import frc.robot.commands.drive.DefaultDriveCommand;
@@ -28,10 +30,12 @@ import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.Telemetry;
 import frc.robot.util.AlignmentCalculator.AlignOffset;
+import frc.robot.util.io.Dashboard;
 import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 
 public class RobotContainer {
     private final ControlBoard controlBoard = ControlBoard.getInstance();
+    private final Dashboard dashboard = Dashboard.getInstance();
 
     public final RobotState robotState = RobotState.getInstance();
     public final DrivetrainSubsystem drivetrain = DrivetrainSubsystem.getInstance();
@@ -42,6 +46,7 @@ public class RobotContainer {
     public final IntakeRollerSubsystem intakeRollers = IntakeRollerSubsystem.getInstance();
     public final VisionSubsystem vision = VisionSubsystem.getInstance();
     public final Telemetry telemetry = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+    public final AutoFactory autoFactory = AutoFactory.getInstance();
 
     public static boolean deadReckoning = false;
 
@@ -174,7 +179,8 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        return new InstantCommand();
+        // return autoFactory.getCompiledAuto();
+        return new DeadReckoning();
     }
 
     public static boolean getDeadReckoning() {
