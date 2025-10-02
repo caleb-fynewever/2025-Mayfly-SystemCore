@@ -4,8 +4,11 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.util.FieldConstants;
+
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
@@ -26,6 +29,10 @@ public class Robot extends LoggedRobot {
     
     Logger.start(); 
     m_robotContainer = new RobotContainer();
+    Pose2d loadPose = FieldConstants.blueLeftBranches.get(0);
+    if (loadPose != null) {
+        System.out.println("Loaded Field Constants");
+    }
   }
 
   @Override
@@ -38,7 +45,9 @@ public class Robot extends LoggedRobot {
   public void disabledInit() {}
 
   @Override
-  public void disabledPeriodic() {}
+  public void disabledPeriodic() {
+    m_robotContainer.precompileAuto();
+  }
 
   @Override
   public void disabledExit() {}
@@ -48,7 +57,8 @@ public class Robot extends LoggedRobot {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
+      CommandScheduler.getInstance().schedule(m_autonomousCommand);
+      // m_autonomousCommand.schedule();
     }
   }
 

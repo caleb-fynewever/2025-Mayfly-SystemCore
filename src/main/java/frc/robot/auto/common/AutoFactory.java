@@ -143,6 +143,14 @@ public class AutoFactory {
         return new InstantCommand();
     }
 
+    public void setCurrentAuto(Auto auto) {
+        currentAuto = auto;
+    }
+
+    public void setCompledAuto(AutoBase auto) {
+        compiledAuto = auto;
+    }
+
     public static enum Auto {
         // LEFT_3_CORAL_JKL(Left3CoralJKL.class),
         // RIGHT_3_CORAL_EDC(Right3CoralEDC.class),

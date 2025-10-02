@@ -22,7 +22,7 @@ public class Dashboard {
     private final LoggedDashboardChooser<Boolean> lollipop = new LoggedDashboardChooser<Boolean>("Lollipop Order");
 
     private final LoggedDashboardChooser<Boolean> coastChooser = new LoggedDashboardChooser<Boolean>("Coast Out");
-    
+
     private final NetworkTableInstance networkTables = NetworkTableInstance.getDefault();
     private final NetworkTable debugTable = networkTables.getTable("debug network tables tab");
 
@@ -51,7 +51,7 @@ public class Dashboard {
         waitTimeTopic.publish().accept(0.0);
         nudgeElevator.publish().accept(0.0);
 
-        autoChooser.addDefaultOption(Auto.NO_AUTO.name(), Auto.NO_AUTO);
+        autoChooser.addDefaultOption(Auto.LEFT_LOLI_LEFT_FIRST.name(), Auto.LEFT_LOLI_LEFT_FIRST);
 
         for (Auto auto : Auto.values()) {
             autoChooser.addOption(auto.name(), auto);

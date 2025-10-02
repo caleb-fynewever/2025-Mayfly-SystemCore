@@ -10,7 +10,9 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.auto.common.AutoFactory;
+import frc.robot.auto.common.AutoFactory.Auto;
 import frc.robot.auto.modes.DeadReckoning;
+import frc.robot.auto.modes.LOLILEFTLeftFirst;
 import frc.robot.auto.modes.MiddleH4;
 import frc.robot.commands.arm.ArmCommandFactory;
 import frc.robot.commands.climber.ClimberCommandFactory;
@@ -179,8 +181,17 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        // return autoFactory.getCompiledAuto();
-        return new DeadReckoning();
+        // autoFactory.setCurrentAuto(Auto.LEFT_LOLI_LEFT_FIRST);
+        // autoFactory.recompile();
+        // autoFactory.setCompledAuto(new LOLILEFTLeftFirst());
+        return autoFactory.getCompiledAuto();
+        // return new DeadReckoning();
+    }
+
+    public void precompileAuto() {
+        if (AutoFactory.getInstance().recompileNeeded()) {
+            AutoFactory.getInstance().recompile();
+        }
     }
 
     public static boolean getDeadReckoning() {

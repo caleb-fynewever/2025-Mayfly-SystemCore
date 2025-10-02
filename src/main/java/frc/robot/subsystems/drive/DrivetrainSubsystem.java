@@ -9,6 +9,11 @@ import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -35,6 +40,8 @@ public class DrivetrainSubsystem extends TunerSwerveDrivetrain implements Subsys
 
     private static DrivetrainSubsystem INSTANCE;
 
+    private final SwerveRequest.ApplyRobotSpeeds autoRequest = new SwerveRequest.ApplyRobotSpeeds();
+
     public static DrivetrainSubsystem getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new DrivetrainSubsystem();
@@ -52,6 +59,35 @@ public class DrivetrainSubsystem extends TunerSwerveDrivetrain implements Subsys
                 DrivetrainConstants.TUNER_DRIVETRAIN_CONSTANTS.getModuleConstants());
         if (Robot.isSimulation()) {
             startSimThread();
+        }
+        configureAutoBuilder();
+    }
+
+    private void configureAutoBuilder() {
+        try {
+            var config = RobotConfig.fromGUISettings();
+            AutoBuilder.configure(
+                    () -> getState().Pose, // Supplier of current robot pose
+                    this::resetPose, // Consumer for seeding pose against auto
+                    () -> getState().Speeds, // Supplier of current robot speeds
+                    // Consumer of ChassisSpeeds and feedforwards to drive the robot
+                    (speeds, feedforwards) -> setControl(autoRequest
+                            .withSpeeds(speeds)
+                            .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                            .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())),
+                    new PPHolonomicDriveController(
+                            // PID constants for translation
+                            new PIDConstants(5, 0, 0),
+                            // PID constants for rotation
+                            new PIDConstants(3.5, 0, 0)),
+                    config,
+                    // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+                    () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                    this // Subsystem for requirements
+                    );
+        } catch (Exception ex) {
+            DriverStation.reportError(
+                    "Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
         }
     }
 
