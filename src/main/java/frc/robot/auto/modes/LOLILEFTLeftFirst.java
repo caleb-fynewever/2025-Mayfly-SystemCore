@@ -110,7 +110,7 @@ public class LOLILEFTLeftFirst extends AutoBase {
                 new ConditionalCommand(
                     Commands.sequence(
                         Commands.parallel(
-                            AlignmentCommandFactory.getSpecificReefAlignmentCommand(() -> AlignOffset.LEFT_BRANCH, FieldElementFace.AB).withTimeout(2.25),
+                            AlignmentCommandFactory.getSpecificReefAlignmentCommand(() -> AlignOffset.LEFT_BRANCH, FieldElementFace.AB).withTimeout(2),
                             toPosition(TargetAction.L2)),
                         score(TargetAction.L2)), 
                     Commands.sequence(
@@ -136,7 +136,7 @@ public class LOLILEFTLeftFirst extends AutoBase {
                 new ConditionalCommand(
                     Commands.sequence(
                         Commands.parallel(
-                            AlignmentCommandFactory.getSpecificReefAlignmentCommand(() -> AlignOffset.RIGHT_BRANCH, FieldElementFace.AB).withTimeout(2.25),
+                            AlignmentCommandFactory.getSpecificReefAlignmentCommand(() -> AlignOffset.RIGHT_BRANCH, FieldElementFace.AB).withTimeout(2),
                             toPosition(TargetAction.L2)),
                         score(TargetAction.L2)), 
                     Commands.sequence(

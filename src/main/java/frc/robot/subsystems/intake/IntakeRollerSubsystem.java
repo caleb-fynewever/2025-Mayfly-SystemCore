@@ -7,6 +7,7 @@ package frc.robot.subsystems.intake;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -42,7 +43,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
 
     private void setMotorPct(double pct) {
         double desiredRPS = pct *= IntakeRollerConstants.MAX_RPS;
-        motor.setControl(m_velocityTorque.withVelocity(desiredRPS));
+        motor.setControl(m_velocityTorque.withVelocity(desiredRPS).withAcceleration(100));
     }
 
     public void stopMotor() {
@@ -70,7 +71,7 @@ public class IntakeRollerSubsystem extends SubsystemBase {
     }
 
     public boolean isBeamBreakHit() {
-        return beamBreak.getVoltage() > 0.4;
+        return beamBreak.getVoltage() > 0.5;
         // return !beamBreak.get();
     }
 
@@ -87,12 +88,16 @@ public class IntakeRollerSubsystem extends SubsystemBase {
                             && isBeamBreakHit()
                             && !ArmPivotSubsystem.getInstance().isAtPosition(3, TargetAction.INTAKE.getArmPivotAngle())
                             && !ElevatorSubsystem.getInstance().atPosition(3, TargetAction.INTAKE))) {
-                motor.stopMotor();
+                setMotorPct(0);
             } else {
-                setMotorPct(IntakeRollerConstants.INTAKE_SPEED);
+                if (holdCoral) {   
+                    setMotorPct(IntakeRollerConstants.L1_SPEED);
+                } else {
+                    setMotorPct(IntakeRollerConstants.INTAKE_SPEED);
+                }
             }
         } else {
-            motor.stopMotor();
+            setMotorPct(0);
         }
     }
 }

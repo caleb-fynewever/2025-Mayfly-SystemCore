@@ -11,15 +11,15 @@ public class Ports {
     /*
      * Bus: SystemCore
      */
-    public static final CANBus MAINLOOP = CANBus.systemCore(0);
-    public static final CANItem ARM_CANCODER_ID = new CANItem(1, MAINLOOP);
-    public static final CANItem ARM_TALONFX_ID = new CANItem(2, MAINLOOP);
+    public static final CANBus MAINLOOP = LOWLOOP;//CANBus.systemCore(2);
+    public static final CANItem ARM_CANCODER_ID = new CANItem(17, MAINLOOP); // 1 etc
+    public static final CANItem ARM_TALONFX_ID = new CANItem(18, MAINLOOP);
 
-    public static final CANItem ARM_ROLLER_TALONFX_ID = new CANItem(3, MAINLOOP);
+    public static final CANItem ARM_ROLLER_TALONFX_ID = new CANItem(19, MAINLOOP);
 
-    public static final CANItem INTAKE_ROLLER_ID = new CANItem(5, MAINLOOP);
-    public static final CANItem INTAKE_PIVOT_ID = new CANItem(6, MAINLOOP);
-    public static final CANItem INTAKE_ENCODER_ID = new CANItem(7, MAINLOOP);
+    public static final CANItem INTAKE_ROLLER_ID = new CANItem(20, MAINLOOP);
+    public static final CANItem INTAKE_PIVOT_ID = new CANItem(21, MAINLOOP);
+    public static final CANItem INTAKE_ENCODER_ID = new CANItem(22, MAINLOOP);
 
     /*
      *  Bus: Krawlivore
