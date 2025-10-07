@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeRollerConstants;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.arm.ArmPivotSubsystem;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.util.io.Ports;
 import org.littletonrobotics.junction.Logger;
 
@@ -85,8 +85,8 @@ public class IntakeRollerSubsystem extends SubsystemBase {
             if (isHoldingCoral()
                     || (!tryingToHoldCoral()
                             && isBeamBreakHit()
-                            && !ArmPivotSubsystem.getInstance().isAtPosition(3, TargetAction.INTAKE.getArmPivotAngle())
-                            && !ElevatorSubsystem.getInstance().atPosition(3, TargetAction.INTAKE))) {
+                            && !ArmPivotSubsystem.getInstance().isAtPosition(3, SuperstructureState.INTAKE.getArmPivotAngle())
+                            && !ElevatorSubsystem.getInstance().atPosition(3, SuperstructureState.INTAKE))) {
                 motor.stopMotor();
             } else {
                 setMotorPct(IntakeRollerConstants.INTAKE_SPEED);

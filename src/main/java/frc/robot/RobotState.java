@@ -9,10 +9,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.commands.drive.alignment.AlignmentCommandFactory;
 import frc.robot.subsystems.arm.ArmRollerSubsystem;
-import frc.robot.subsystems.intake.IntakeRollerSubsystem;
 import frc.robot.util.AlignmentCalculator.AlignOffset;
 import frc.robot.util.AlignmentCalculator.FieldElementFace;
 import frc.robot.util.FieldConstants;
+
+import java.util.function.BooleanSupplier;
+
 import org.littletonrobotics.junction.Logger;
 
 public class RobotState {
@@ -21,6 +23,7 @@ public class RobotState {
     private Pose2d autoStartPose;
 
     private boolean isAlignGoal;
+    private boolean algaeMode;
     private FieldElementFace desiredReefFace;
     private FieldElementFace seenReefFace;
     private static RobotState INSTANCE;
@@ -33,7 +36,11 @@ public class RobotState {
         return INSTANCE;
     }
 
-    private RobotState() {}
+    private RobotState() {
+        algaeMode = false;
+        isAlignGoal = false;
+        selectedAlignOffset = AlignOffset.MIDDLE_REEF;
+    }
 
     public Pose2d getFieldToRobot() {
         if (drivetrainState.Pose != null) {
@@ -45,6 +52,14 @@ public class RobotState {
 
     public boolean getHasCoral() {
         return ArmRollerSubsystem.getInstance().getHasCoral();
+    }
+
+    public void setAlgaeMode(boolean algaeMode) {
+        this.algaeMode = algaeMode;
+    }
+
+    public BooleanSupplier isAlgaeMode() {
+        return () -> algaeMode;
     }
 
     public void setAlignOffset(AlignOffset offset) {

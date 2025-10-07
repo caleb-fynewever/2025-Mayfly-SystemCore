@@ -4,17 +4,17 @@ import static edu.wpi.first.units.Units.Degrees;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.DashboardConstants;
 import frc.robot.Constants.SuperstructureConstants;
 import frc.robot.RobotState;
 import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.arm.ArmPivotSubsystem;
 import frc.robot.subsystems.intake.IntakePivotSubsystem;
 import frc.robot.subsystems.intake.IntakeRollerSubsystem;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
-import java.util.function.Supplier;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureStateType;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 
 public class SuperstructureSubsystem extends SubsystemBase {
 
@@ -23,11 +23,12 @@ public class SuperstructureSubsystem extends SubsystemBase {
     private ElevatorSubsystem elevator = ElevatorSubsystem.getInstance();
     private ArmPivotSubsystem armPivot = ArmPivotSubsystem.getInstance();
     private IntakePivotSubsystem intakePivot = IntakePivotSubsystem.getInstance();
+    private RobotState robotState = RobotState.getInstance();
 
-    private TargetAction selectedTargetAction = TargetAction.EXPLODE;
-    private TargetAction currentAction = TargetAction.EXPLODE;
+    private SuperstructureState unconfirmedState = SuperstructureState.EXPLODE;
+    private SuperstructureState goalState = SuperstructureState.EXPLODE;
 
-    private TargetAction previousAction;
+    private SuperstructureState previousState;
     private boolean isChangingState;
 
     private boolean cancelHome = false;
@@ -36,7 +37,7 @@ public class SuperstructureSubsystem extends SubsystemBase {
 
     /** Private constructor to prevent instantiation. */
     private SuperstructureSubsystem() {
-        previousAction = getSelectedTargetAction();
+        previousState = getUnconfirmedState();
         // pushChangedValueToShuffleboard(previousAction);
         isChangingState = false;
     }
@@ -49,12 +50,8 @@ public class SuperstructureSubsystem extends SubsystemBase {
         return INSTANCE;
     }
 
-    public boolean isAtTargetState() {
-        return isChangingState;
-    }
-
-    public TargetAction getLatestAction() {
-        return previousAction;
+    public SuperstructureState getLatestAction() {
+        return previousState;
     }
 
     // private void pushChangedValueToShuffleboard(TargetAction action) {
@@ -83,80 +80,71 @@ public class SuperstructureSubsystem extends SubsystemBase {
     //     }
     // }
 
-    public Command set(TargetAction target, boolean confirm) {
-        return new InstantCommand(() -> setSelectedTargetAction(target, confirm));
+    public Command setSelected(SuperstructureState unconfirmedState, boolean autoConfirm) {
+        return Commands.runOnce(() -> setUnconfirmedState(unconfirmedState, autoConfirm));
     }
 
-    public void setSelectedTargetAction(TargetAction target, boolean confirm) {
-        selectedTargetAction = target;
-        // pushChangedValueToShuffleboard(selectedTargetAction);
-        if (confirm) {
+    private void setUnconfirmedState(SuperstructureState unconfirmedState, boolean autoConfirm) {
+        this.unconfirmedState = unconfirmedState;
+        if(autoConfirm) {
             confirmSelectedAction();
         }
+        // pushChangedValueToShuffleboard(selectedTargetAction);
         revealCombination();
     }
 
-    public void stow() {
-        setCurrentAction(getStowFromCurrent());
+    public Command setGoal(SuperstructureState goalState) {
+        return Commands.runOnce(() -> setGoalState(goalState));
     }
 
-    public void setCurrentAction(TargetAction target) {
-        currentAction = target;
+    private void setGoalState(SuperstructureState goalState) {
+        this.goalState = goalState;
     }
 
     public Command confirm() {
-        return new InstantCommand(() -> confirmSelectedAction());
+        return Commands.run(() -> confirmSelectedAction());
     }
 
-    public void confirmSelectedAction() {
-        currentAction = selectedTargetAction;
+    private void confirmSelectedAction() {
+        goalState = unconfirmedState;
         movingFromIntake = false;
         revealCombination();
     }
 
-    public TargetAction getSelectedTargetAction() {
-        return selectedTargetAction;
+    public SuperstructureState getUnconfirmedState() {
+        return unconfirmedState;
     }
 
-    public TargetAction getCurrentAction() {
-        return currentAction;
+    public SuperstructureState getGoalState() {
+        return goalState;
     }
 
     public void revealCombination() {
-        System.out.println("Goal : " + getSelectedTargetAction().toString());
+        System.out.println("Unconfirmed State : " + getUnconfirmedState().toString());
+    }
+
+    public void stow() {
+        setGoalState(getStowFromGoalState());
     }
 
     @Override
     public void periodic() {
-        TargetAction goalTargetAction = getCurrentAction();
-        // Logger.recordOutput("Superstructure/Current = Selected", goalTargetAction == getSelectedTargetAction());
-        // Logger.recordOutput("Target Superstructure Changing State", isChangingState);
-
-        if (goalTargetAction != previousAction) {
-            // Logger.recordOutput("Target Superstructure State Has Changed", true);
-            isChangingState = true;
-            if (goalTargetAction != TargetAction.HOME) {
-                cancelHome = true;
-            }
-        } else {
-            // Logger.recordOutput("Target Superstructure State Has Changed", false);
-        }
-
-        if (goalTargetAction == TargetAction.ALGAE_NET) {
-            algaeScoreDownNeeded = true;
-        }
+        robotState.setAlgaeMode(goalState.getType() == SuperstructureStateType.ALGAE);
+        isChangingState = goalState != previousState;
+        algaeScoreDownNeeded = goalState == SuperstructureState.ALGAE_NET;
+        cancelHome = isChangingState && goalState != SuperstructureState.HOME;
 
         if (IntakeRollerSubsystem.getInstance().isHoldingCoral()) {
-            setCurrentAction(TargetAction.TRAVEL);
+            setGoalState(SuperstructureState.TRAVEL);
         } else if (!movingFromIntake
-                && RobotState.getInstance().getHasCoral()
-                && (goalTargetAction == TargetAction.INTAKE)
-                && armPivot.atPosition(goalTargetAction)) {
+                && robotState.getHasCoral()
+                && (goalState == SuperstructureState.INTAKE)
+                && armPivot.atPosition(goalState)) {
             movingFromIntake = true;
-            setCurrentAction(DriverStation.isAutonomous() ? TargetAction.L3 : TargetAction.STOW);
+            setGoalState(DriverStation.isAutonomous() ? SuperstructureState.L3 : SuperstructureState.STOW);
         }
 
-        if (armPivot.atPosition(TargetAction.STOW)) {
+        if (armPivot.atPosition(SuperstructureState.STOW)) {
             movingFromIntake = false;
         }
 
@@ -164,75 +152,72 @@ public class SuperstructureSubsystem extends SubsystemBase {
             if (cancelHome) {
                 elevator.setWantHome(false);
                 cancelHome = false;
-            } else if (goalTargetAction == TargetAction.HOME && !elevator.isHoming()) {
+            } else if (goalState == SuperstructureState.HOME && !elevator.isHoming()) {
                 elevator.setWantHome(true);
-                intakePivot.setAngle(TargetAction.HOME.getIntakePivotPosition());
-                armPivot.setArmPosition(TargetAction.HOME);
+                intakePivot.setAngle(SuperstructureState.HOME.getIntakePivotPosition());
+                armPivot.setArmPosition(SuperstructureState.HOME);
                 System.out.println("HOMING");
                 return;
             }
 
             boolean armCrossingDanger = willArmCrossDangerZone(
                     armPivot.getArmAngle().in(Degrees),
-                    goalTargetAction.getArmPivotAngle().in(Degrees));
+                    goalState.getArmPivotAngle().in(Degrees));
 
-            if (goalTargetAction.getElevatorPositionRotations() < SuperstructureConstants.MIN_SAFE_ROTATION
+            if (goalState.getElevatorPositionRotations() < SuperstructureConstants.MIN_SAFE_ROTATION
                     && elevator.getPosition() < SuperstructureConstants.MIN_SAFE_ROTATION
                     && armCrossingDanger) {
-                intakePivot.setPosition(goalTargetAction);
+                intakePivot.setPosition(goalState);
 
-                if (!armPivot.isAtPosition(5, goalTargetAction.getArmPivotAngle())) {
-                    elevator.setPositionMotionMagic(TargetAction.SAFE_ARM_HEIGHT);
+                if (!armPivot.isAtPosition(5, goalState.getArmPivotAngle())) {
+                    elevator.setPositionMotionMagic(SuperstructureState.SAFE_ARM_HEIGHT);
                 }
 
-                if (elevator.atPosition(1.0, TargetAction.SAFE_ARM_HEIGHT)) {
-                    armPivot.setArmPosition(goalTargetAction);
-                    if (armPivot.isAtPosition(5, goalTargetAction.getArmPivotAngle())) {
-                        elevator.setPositionMotionMagic(goalTargetAction);
+                if (elevator.atPosition(1.0, SuperstructureState.SAFE_ARM_HEIGHT)) {
+                    armPivot.setArmPosition(goalState);
+                    if (armPivot.isAtPosition(5, goalState.getArmPivotAngle())) {
+                        elevator.setPositionMotionMagic(goalState);
                     }
                 }
-            } else if (goalTargetAction.getElevatorPositionRotations() < elevator.getPosition()) {
+            } else if (goalState.getElevatorPositionRotations() < elevator.getPosition()) {
                 if (algaeScoreDownNeeded) {
-                    armPivot.setArmPosition(goalTargetAction);
-                    intakePivot.setPosition(goalTargetAction);
+                    armPivot.setArmPosition(goalState);
+                    intakePivot.setPosition(goalState);
 
-                    if (armPivot.isAtPosition(3, goalTargetAction.getArmPivotAngle())) {
-                        elevator.setPositionMotionMagic(goalTargetAction);
+                    if (armPivot.isAtPosition(3, goalState.getArmPivotAngle())) {
+                        elevator.setPositionMotionMagic(goalState);
                         algaeScoreDownNeeded = false;
                     }
                 }
-                if (goalTargetAction.getElevatorPositionRotations() > SuperstructureConstants.MIN_SAFE_ROTATION
+                if (goalState.getElevatorPositionRotations() > SuperstructureConstants.MIN_SAFE_ROTATION
                         || elevator.getPosition() > SuperstructureConstants.MIN_MOVE_ROTATION) {
-                    elevator.setPositionMotionMagic(goalTargetAction);
-                    armPivot.setArmPosition(goalTargetAction);
-                    intakePivot.setPosition(goalTargetAction);
+                    elevator.setPositionMotionMagic(goalState);
+                    armPivot.setArmPosition(goalState);
+                    intakePivot.setPosition(goalState);
                 } else {
-                    armPivot.setArmPosition(goalTargetAction);
-                    intakePivot.setPosition(goalTargetAction);
+                    armPivot.setArmPosition(goalState);
+                    intakePivot.setPosition(goalState);
 
-                    if (armPivot.isAtPosition(10, goalTargetAction.getArmPivotAngle())) {
-                        elevator.setPositionMotionMagic(goalTargetAction);
+                    if (armPivot.isAtPosition(10, goalState.getArmPivotAngle())) {
+                        elevator.setPositionMotionMagic(goalState);
                     }
                 }
-            } else if (goalTargetAction.getElevatorPositionRotations() > elevator.getPosition()) {
-                elevator.setPositionMotionMagic(goalTargetAction);
-                intakePivot.setPosition(goalTargetAction);
+            } else if (goalState.getElevatorPositionRotations() > elevator.getPosition()) {
+                elevator.setPositionMotionMagic(goalState);
+                intakePivot.setPosition(goalState);
 
-                if (elevator.atPosition(20, goalTargetAction)) {
-                    armPivot.setArmPosition(goalTargetAction);
+                if (elevator.atPosition(20, goalState)) {
+                    armPivot.setArmPosition(goalState);
                 }
             }
 
-            if (elevator.atPosition(goalTargetAction)
-                    && armPivot.isAtPosition(5, goalTargetAction.getArmPivotAngle())) {
+            if (elevator.atPosition(goalState)
+                    && armPivot.isAtPosition(5, goalState.getArmPivotAngle())) {
                 isChangingState = false;
-                // Logger.recordOutput("Arrived at Target State", true);
-            } else {
-                // Logger.recordOutput("Arrived at Target State", false);
-            }
+            } 
         }
 
-        previousAction = goalTargetAction;
+        previousState = goalState;
     }
 
     public boolean willArmCrossDangerZone(double currentDeg, double goalDeg) {
@@ -250,22 +235,22 @@ public class SuperstructureSubsystem extends SubsystemBase {
     }
 
     public boolean atConfirmedPosition() {
-        return atPosition(currentAction);
+        return atPosition(goalState);
     }
 
-    public boolean atPosition(TargetAction goalPosition) {
-        return elevator.atPosition(goalPosition)
-                && armPivot.atPosition(goalPosition)
-                && intakePivot.atPosition(goalPosition);
+    public boolean atPosition(SuperstructureState state) {
+        return elevator.atPosition(state)
+                && armPivot.atPosition(state)
+                && intakePivot.atPosition(state);
     }
 
-    public TargetAction getStowFromCurrent() {
-        if (currentAction == TargetAction.ALGAE_NET) {
-            return TargetAction.POST_ALGAE_STOW;
-        } else if (currentAction == TargetAction.ALGAE_PROCESS) {
-            return TargetAction.ALGAE_PROCESS;
+    public SuperstructureState getStowFromGoalState() {
+        if (goalState == SuperstructureState.ALGAE_NET) {
+            return SuperstructureState.POST_ALGAE_STOW;
+        } else if (goalState == SuperstructureState.ALGAE_PROCESS) {
+            return SuperstructureState.ALGAE_PROCESS;
         } else {
-            return TargetAction.STOW;
+            return SuperstructureState.STOW;
         }
     }
 }

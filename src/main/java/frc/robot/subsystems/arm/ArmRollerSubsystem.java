@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ArmRollerConstants;
 import frc.robot.RobotState;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 import frc.robot.util.io.Ports;
 
@@ -38,9 +38,6 @@ public class ArmRollerSubsystem extends SubsystemBase {
     private ArmRollerSubsystem() {
         motor = new TalonFX(Ports.ARM_ROLLER_TALONFX_ID.getId(), Ports.ARM_ROLLER_TALONFX_ID.getLoop());
         beamBreak = new AnalogInput(Ports.CORAL_BEAM_BREAK_PIN);
-        // range = new CANrange(Ports.ARM_ROLLER_CANRANGE_ID);
-
-        // range.getConfigurator().apply(ArmRollerConstants.CANRANGE_CONFIG);
 
         motor.getConfigurator().apply(ArmRollerConstants.MOTOR_CONFIG);
     }
@@ -55,9 +52,9 @@ public class ArmRollerSubsystem extends SubsystemBase {
     }
 
     public void coralOut() {
-        if (SuperstructureSubsystem.getInstance().getCurrentAction().equals(TargetAction.L1H)) {
+        if (SuperstructureSubsystem.getInstance().getGoalState().equals(SuperstructureState.L1H)) {
             setMotor(ArmRollerConstants.CORAL_L1_OUT_SPEED);
-        } else if (SuperstructureSubsystem.getInstance().getCurrentAction().equals(TargetAction.L4)) {
+        } else if (SuperstructureSubsystem.getInstance().getGoalState().equals(SuperstructureState.L4)) {
             setMotor(ArmRollerConstants.CORAL_L4_OUT_SPEED);
         } else {
             setMotor(ArmRollerConstants.CORAL_L2_L3_OUT_SPEED);

@@ -301,6 +301,7 @@ public class Constants {
     public static final double INTAKE_SPEED = -1.00;
     public static final double OUTTAKE_SPEED = 1.00;
     public static final double MAX_RPS = 100;
+    public static final double SPIT_TIME = 0.25;
 
     public static final MotorOutputConfigs MOTOR_OUTPUT_CONFIG =
         new MotorOutputConfigs()

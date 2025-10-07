@@ -29,7 +29,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.IntakePivotConstants;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.util.io.Ports;
 // import org.littletonrobotics.junction.Logger;
 
@@ -55,7 +55,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
     }
 
     private IntakePivotSubsystem() {
-        goalPosition = TargetAction.STOW.getIntakePivotPosition();
+        goalPosition = SuperstructureState.STOW.getIntakePivotPosition();
         pivotMotor = new TalonFX(Ports.INTAKE_PIVOT_ID.getId(), Ports.INTAKE_PIVOT_ID.getLoop());
         pivotMotor.getConfigurator().apply(IntakePivotConstants.MOTOR_CONFIG);
 
@@ -92,7 +92,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
         goalPosition = rotations;
     }
 
-    public void setPosition(TargetAction action) {
+    public void setPosition(SuperstructureState action) {
         goalPosition = action.getIntakePivotPosition();
     }
 
@@ -108,7 +108,7 @@ public class IntakePivotSubsystem extends SubsystemBase {
         return Math.abs(getPosition() - goal) <= tol;
     }
 
-    public boolean atPosition(TargetAction action) {
+    public boolean atPosition(SuperstructureState action) {
         return isAtPosition(IntakePivotConstants.DEG_TOL, action.getIntakePivotPosition());
     }
 

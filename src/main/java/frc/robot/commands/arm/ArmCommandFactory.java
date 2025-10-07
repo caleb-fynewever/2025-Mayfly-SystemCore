@@ -1,39 +1,46 @@
 package frc.robot.commands.arm;
 
+import static edu.wpi.first.units.Units.Seconds;
+
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.ConditionalCommand;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.RobotState;
 import frc.robot.subsystems.arm.ArmPivotSubsystem;
 import frc.robot.subsystems.arm.ArmRollerSubsystem;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.ActionType;
-import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 
 public class ArmCommandFactory {
     private static final ArmRollerSubsystem rollers = ArmRollerSubsystem.getInstance();
     private static final ArmPivotSubsystem pivot = ArmPivotSubsystem.getInstance();
+    private static final RobotState robotState = RobotState.getInstance();
 
     public static Command intake() {
-        return new ConditionalCommand(
+        return Commands.either(
                 algaeIn(),
                 coralIn(),
-                () -> SuperstructureSubsystem.getInstance().getCurrentAction().getType() == ActionType.ALGAE);
+                robotState.isAlgaeMode());
     }
 
-    public static Command outtake() {
-        return new ConditionalCommand(
+    public static Command score() {
+        return Commands.either(
                 algaeOut(),
-                coralInTap().andThen(coralOut()),
-                () -> SuperstructureSubsystem.getInstance().getCurrentAction().getType() == ActionType.ALGAE);
+                scoreCoral(),
+                robotState.isAlgaeMode());
+    }
+
+    public static Command scoreCoral() {
+        return Commands.sequence(
+            Commands.deadline(coralIn(), Commands.waitTime(Seconds.of(0.075))),
+            Commands.deadline(coralOut(), Commands.waitTime(Seconds.of(0.5)))
+        );
     }
 
     public static Command coralInTap() {
-        return coralIn().withDeadline(new WaitCommand(0.075));
+        return Commands.deadline(coralIn(), Commands.waitTime(Seconds.of(0.075)));
     }
 
     public static Command algaeInTap() {
-        return algaeIn().withDeadline(new WaitCommand(0.1));
+        return Commands.deadline(algaeIn(), Commands.waitTime(Seconds.of(0.1)));
     }
 
     public static Command coralIn() {

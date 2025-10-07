@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.auto.common.AutoFactory;
@@ -27,8 +28,8 @@ import frc.robot.subsystems.drive.DrivetrainSubsystem;
 import frc.robot.subsystems.drive.ctre.generated.TunerConstants;
 import frc.robot.subsystems.intake.IntakePivotSubsystem;
 import frc.robot.subsystems.intake.IntakeRollerSubsystem;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.ActionType;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureStateType;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.subsystems.vision.VisionSubsystem;
 import frc.robot.util.Telemetry;
 import frc.robot.util.AlignmentCalculator.AlignOffset;
@@ -79,31 +80,26 @@ public class RobotContainer {
 
         controlBoard
                 .intake()
-                .onTrue(new ConditionalCommand(
-                        new InstantCommand(),
-                        new InstantCommand(() -> superstructure.setCurrentAction(TargetAction.INTAKE)),
-                        () -> superstructure.getCurrentAction().getType() == ActionType.ALGAE))
-                .whileTrue(new ConditionalCommand(
+                .onTrue(Commands.either(
+                        Commands.none(),
+                        superstructure.setGoal(SuperstructureState.INTAKE),
+                        robotState.isAlgaeMode()))
+                .whileTrue(Commands.either(
                         ArmCommandFactory.algaeIn(),
-                        ArmCommandFactory.intake(),
-                        () -> intakeRollers.tryingToHoldCoral()
-                                || superstructure.getCurrentAction().getType() == ActionType.ALGAE))
-                .whileTrue(new ConditionalCommand(
-                        new InstantCommand(),
-                        IntakeCommandFactory.intake(),
-                        () -> superstructure.getCurrentAction().getType() == ActionType.ALGAE));                
+                        Commands.parallel(ArmCommandFactory.intake(), IntakeCommandFactory.intake()),
+                        () -> superstructure.getGoalState().getType() == SuperstructureStateType.ALGAE));           
 
         controlBoard
                 .outtake()
-                .whileTrue(ArmCommandFactory.outtake())
-                .onFalse(new InstantCommand(() -> superstructure.stow()));
+                .onTrue(ArmCommandFactory.score())
+                .onFalse(superstructure.setGoal(SuperstructureState.STOW));
 
         controlBoard.armRollerTapIn().whileTrue(ArmCommandFactory.coralIn());
 
         controlBoard
                 .groundOuttake()
                 .whileTrue(IntakeCommandFactory.outtake())
-                .onFalse(new InstantCommand(() -> superstructure.stow()));
+                .onFalse(superstructure.setGoal(SuperstructureState.STOW));
 
         controlBoard.confirmSuperstructure().onTrue(superstructure.confirm());
 
@@ -120,31 +116,31 @@ public class RobotContainer {
         /* Secondary Driver */
         controlBoard.actTrigger().onTrue(superstructure.confirm());
 
-        controlBoard.setGoalCL().onTrue(superstructure.set(TargetAction.CLIMB, true));
+        controlBoard.setGoalCL().onTrue(superstructure.setSelected(SuperstructureState.CLIMB, true));
         controlBoard
                 .setGoalL1H()
-                .onTrue(superstructure.set(TargetAction.L1H, false));
-        controlBoard.setGoalL2().onTrue(superstructure.set(TargetAction.L2, false));
-        controlBoard.setGoalL3().onTrue(superstructure.set(TargetAction.L3, false));
-        controlBoard.setGoalL4().onTrue(superstructure.set(TargetAction.L4, false));
+                .onTrue(superstructure.setSelected(SuperstructureState.L1H, false));
+        controlBoard.setGoalL2().onTrue(superstructure.setSelected(SuperstructureState.L2, false));
+        controlBoard.setGoalL3().onTrue(superstructure.setSelected(SuperstructureState.L3, false));
+        controlBoard.setGoalL4().onTrue(superstructure.setSelected(SuperstructureState.L4, false));
         controlBoard
                 .setGoalLowerAlgae()
-                .onTrue(superstructure.set(TargetAction.LOWER_ALGAE, false));
+                .onTrue(superstructure.setSelected(SuperstructureState.LOWER_ALGAE, false));
         controlBoard
                 .setGoalUpperAlgae()
-                .onTrue(superstructure.set(TargetAction.UPPER_ALGAE, false));
+                .onTrue(superstructure.setSelected(SuperstructureState.UPPER_ALGAE, false));
 
-        controlBoard.setGoalCoralStation().onTrue(superstructure.set(TargetAction.SPOOKY_STOW, false));
-        controlBoard.homeElevator().onTrue(superstructure.set(TargetAction.HOME, false));
+        controlBoard.setGoalCoralStation().onTrue(superstructure.setSelected(SuperstructureState.SPOOKY_STOW, false));
+        controlBoard.homeElevator().onTrue(superstructure.setSelected(SuperstructureState.HOME, false));
 
         controlBoard.climbUp().whileTrue(ClimberCommandFactory.climberUp());
         controlBoard.climbDown().whileTrue(ClimberCommandFactory.climberDown());
 
-        controlBoard.algaeScoreAngle().onTrue(superstructure.set(TargetAction.ALGAE_NET, false));
-        controlBoard.algaeLowAngle().onTrue(superstructure.set(TargetAction.ALGAE_PROCESS, false));
+        controlBoard.algaeScoreAngle().onTrue(superstructure.setSelected(SuperstructureState.ALGAE_NET, false));
+        controlBoard.algaeLowAngle().onTrue(superstructure.setSelected(SuperstructureState.ALGAE_PROCESS, false));
 
-        controlBoard.loadingStation().onTrue(superstructure.set(TargetAction.HP, false));
-        controlBoard.unJam().onTrue(superstructure.set(TargetAction.UN_JAM, false));
+        controlBoard.loadingStation().onTrue(superstructure.setSelected(SuperstructureState.HP, false));
+        controlBoard.unJam().onTrue(superstructure.setSelected(SuperstructureState.UN_JAM, false));
 
         /* SysID */
         controlBoard.sysIDDynamicForward().onTrue(SuperstructureCommandFactory.setCoast());

@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.Constants.ArmPivotConstants;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.util.io.Ports;
 
 public class ArmPivotSubsystem extends SubsystemBase {
@@ -40,7 +40,7 @@ public class ArmPivotSubsystem extends SubsystemBase {
     }
 
     private ArmPivotSubsystem() {
-        goalPosition = TargetAction.STOW.getArmPivotAngle();
+        goalPosition = SuperstructureState.STOW.getArmPivotAngle();
 
         pivotMotor = new TalonFX(Ports.ARM_TALONFX_ID.getId(), Ports.ARM_TALONFX_ID.getLoop());
 
@@ -67,7 +67,7 @@ public class ArmPivotSubsystem extends SubsystemBase {
         pivotMotor.setControl(new PositionVoltage(angle));
     }
 
-    public void setArmPosition(TargetAction position) {
+    public void setArmPosition(SuperstructureState position) {
         this.goalPosition = clampPosition(position.getArmPivotAngle());
         setPivotAngle(goalPosition);
     }
@@ -104,7 +104,7 @@ public class ArmPivotSubsystem extends SubsystemBase {
         return Math.abs(getPosition().in(Degrees) - goal.in(Degrees)) <= tol;
     }
 
-    public boolean atPosition(TargetAction action) {
+    public boolean atPosition(SuperstructureState action) {
         return isAtPosition(ArmPivotConstants.DEG_TOL, action.getArmPivotAngle());
     }
 

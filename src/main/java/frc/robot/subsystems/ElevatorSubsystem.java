@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ElevatorConstants;
 import frc.robot.Constants.SuperstructureConstants;
 import frc.robot.subsystems.arm.ArmPivotSubsystem;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 import frc.robot.util.io.Ports;
 // import org.littletonrobotics.junction.Logger;
@@ -53,7 +53,7 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     private ElevatorSubsystem() {
-        goalPositionRotations = TargetAction.HOME.getElevatorPositionRotations();
+        goalPositionRotations = SuperstructureState.HOME.getElevatorPositionRotations();
 
         frontMotor = new TalonFX(Ports.ELEVATOR_FRONT_ID, Ports.LOWLOOP);
         backMotor = new TalonFX(Ports.ELEVATOR_BACK_ID, Ports.LOWLOOP);
@@ -76,7 +76,7 @@ public class ElevatorSubsystem extends SubsystemBase {
         return pos;
     }
 
-    public void setPositionMotionMagic(TargetAction elevatorAction) {
+    public void setPositionMotionMagic(SuperstructureState elevatorAction) {
         setPositionMotionMagic(elevatorAction.getElevatorPositionRotations());
     }
 
@@ -86,7 +86,7 @@ public class ElevatorSubsystem extends SubsystemBase {
             return;
         }
 
-        if (elevatorPositionRotations != TargetAction.HOME.getElevatorPositionRotations()) {
+        if (elevatorPositionRotations != SuperstructureState.HOME.getElevatorPositionRotations()) {
             shouldHome = true;
         }
 
@@ -122,11 +122,11 @@ public class ElevatorSubsystem extends SubsystemBase {
         return Math.abs(goalPositionRotations - getPosition()) <= ElevatorConstants.TICKS_DEADZONE;
     }
 
-    public boolean atPosition(TargetAction position) {
+    public boolean atPosition(SuperstructureState position) {
         return Math.abs(position.getElevatorPositionRotations() - getPosition()) <= ElevatorConstants.TICKS_DEADZONE;
     }
 
-    public boolean atPosition(double tol, TargetAction position) {
+    public boolean atPosition(double tol, SuperstructureState position) {
         return Math.abs(position.getElevatorPositionRotations() - getPosition()) <= tol;
     }
 
@@ -151,8 +151,8 @@ public class ElevatorSubsystem extends SubsystemBase {
     }
 
     public boolean atHomingLocation() {
-        return getPosition() < TargetAction.HOME.getElevatorPositionRotations()
-                || MathHelpers.epsilonEquals(getPosition(), TargetAction.HOME.getElevatorPositionRotations(), 0.05);
+        return getPosition() < SuperstructureState.HOME.getElevatorPositionRotations()
+                || MathHelpers.epsilonEquals(getPosition(), SuperstructureState.HOME.getElevatorPositionRotations(), 0.05);
     }
 
     public void setNeutralMode(NeutralModeValue mode) {
@@ -181,7 +181,7 @@ public class ElevatorSubsystem extends SubsystemBase {
                     MathHelpers.epsilonEquals(frontMotor.getVelocity().getValueAsDouble(), 0.0, 0.25))) {
                 zeroEncoder();
                 System.out.println("Elevator Homed");
-                SuperstructureSubsystem.getInstance().setCurrentAction(TargetAction.STOW);
+                SuperstructureSubsystem.getInstance().setGoal(SuperstructureState.STOW);
                 homing = false;
                 homingDelay.update(Timer.getFPGATimestamp(), false);
             }

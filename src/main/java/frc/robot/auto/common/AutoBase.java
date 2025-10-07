@@ -26,7 +26,7 @@ import frc.robot.subsystems.ElevatorSubsystem;
 import frc.robot.subsystems.arm.ArmPivotSubsystem;
 import frc.robot.subsystems.arm.ArmRollerSubsystem;
 import frc.robot.subsystems.drive.DrivetrainSubsystem;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 import frc.robot.util.AlignmentCalculator.AlignOffset;
 import java.util.List;
@@ -69,7 +69,7 @@ public abstract class AutoBase extends SequentialCommandGroup {
     }
 
     protected Command startHP() {
-        return new InstantCommand(() -> SuperstructureSubsystem.getInstance().setCurrentAction(TargetAction.STOW));
+        return new InstantCommand(() -> SuperstructureSubsystem.getInstance().setGoal(SuperstructureState.STOW));
     }
 
     protected static PathPlannerPath getPathFromFile(String pathName) {
@@ -133,11 +133,11 @@ public abstract class AutoBase extends SequentialCommandGroup {
         return new WaitCommand(autoFactory.getSavedWaitSeconds());
     }
 
-    protected Command elevatorToPos(TargetAction position) {
-        return new InstantCommand(() -> SuperstructureSubsystem.getInstance().setCurrentAction(position));
+    protected Command elevatorToPos(SuperstructureState position) {
+        return new InstantCommand(() -> SuperstructureSubsystem.getInstance().setGoal(position));
     }
 
-    protected Command score(TargetAction position) {
+    protected Command score(SuperstructureState position) {
         return new ParallelCommandGroup(
                         IntakeCommandFactory.outtake().withTimeout(0.3),
                         ArmCommandFactory.coralOut().withTimeout(0.5))
@@ -145,15 +145,15 @@ public abstract class AutoBase extends SequentialCommandGroup {
     }
 
     protected BooleanSupplier haveCoral() {
-        new PrintCommand("STOWED: " + (SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.L3));
+        new PrintCommand("STOWED: " + (SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.L3));
         new PrintCommand("HAVE CORAL: " + (RobotState.getInstance().getHasCoral()));
-        return () -> (SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.L3
+        return () -> (SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.L3
                 || RobotState.getInstance().getHasCoral());
     }
 
-    protected Command toPosAndScore(TargetAction position) {
+    protected Command toPosAndScore(SuperstructureState position) {
         return new SequentialCommandGroup(
-                new InstantCommand(() -> SuperstructureSubsystem.getInstance().setCurrentAction(position)),
+                new InstantCommand(() -> SuperstructureSubsystem.getInstance().setGoal(position)),
                 new InstantCommand(() -> ArmRollerSubsystem.getInstance().stopMotor()),
                 Commands.waitUntil(() -> ElevatorSubsystem.getInstance().atPosition(2.0, position)
                                 && ArmPivotSubsystem.getInstance().isAtDesiredPosition())
@@ -164,14 +164,14 @@ public abstract class AutoBase extends SequentialCommandGroup {
     }
 
     protected Command pickup(Path path) {
-        return (new InstantCommand(() -> SuperstructureSubsystem.getInstance().setCurrentAction(TargetAction.INTAKE))
+        return (new InstantCommand(() -> SuperstructureSubsystem.getInstance().setGoal(SuperstructureState.INTAKE))
                         .beforeStarting(new WaitCommand(0.1)))
                 .alongWith(((followPathCommand(path.getPathPlannerPath()))
                         .deadlineFor(IntakeCommandFactory.intake().alongWith(ArmCommandFactory.coralIn()))))
                 // interrupted (have coral)? continue
                 // path went all the way through? pause + intake
                 .andThen(
-                        !(SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.L3
+                        !(SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.L3
                                         || RobotState.getInstance().getHasCoral())
                                 ? new WaitCommand(0.5)
                                         .deadlineFor(IntakeCommandFactory.intake())
@@ -179,14 +179,14 @@ public abstract class AutoBase extends SequentialCommandGroup {
                                 : new InstantCommand());
     }
 
-    protected Command toPosition(TargetAction pos) {
-        return new InstantCommand(() -> SuperstructureSubsystem.getInstance().setCurrentAction(pos));
+    protected Command toPosition(SuperstructureState pos) {
+        return new InstantCommand(() -> SuperstructureSubsystem.getInstance().setGoal(pos));
     }
 
     protected Command scoreNet() {
         return Commands.sequence(
                 (Commands.waitUntil(() -> ArmPivotSubsystem.getInstance()
-                                        .isAtPosition(2.0, TargetAction.ALGAE_NET.getArmPivotAngle()))
+                                        .isAtPosition(2.0, SuperstructureState.ALGAE_NET.getArmPivotAngle()))
                                 .andThen(new WaitCommand(0.3)))
                         .deadlineFor(ArmCommandFactory.algaeIn()),
                 ArmCommandFactory.algaeOut().withTimeout(0.5));

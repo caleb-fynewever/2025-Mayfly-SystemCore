@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.RobotState;
 import frc.robot.auto.common.AutoFactory.Auto;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.subsystems.superstructure.SuperstructureSubsystem;
 import frc.robot.util.io.Dashboard;
 import frc.robot.util.io.Ports;
@@ -121,19 +121,19 @@ public class LedSubsystem extends SubsystemBase {
             // teleop LED status modes
 
             if (DriverStation.isTeleopEnabled()) {
-                if (SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.STOW) {
+                if (SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.STOW) {
                     currentStatusMode = LEDStatusMode.DONE_CLIMBING;
                 } else if (state.desiredReefFaceIsSeen()) {
                     currentStatusMode = LEDStatusMode.REQUEST_LOADING;
-                } else if (SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.L1H) {
+                } else if (SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.L1H) {
                     currentStatusMode = LEDStatusMode.SPARKLE;
-                } else if (SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.L1H) {
+                } else if (SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.L1H) {
                     currentStatusMode = LEDStatusMode.RED_SPARKLE;
-                } else if (SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.L2) {
+                } else if (SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.L2) {
                     currentStatusMode = LEDStatusMode.YELLOW_SPARKLE;
-                } else if (SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.L3) {
+                } else if (SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.L3) {
                     currentStatusMode = LEDStatusMode.ORANGE_SPARKLE;
-                } else if (SuperstructureSubsystem.getInstance().getCurrentAction() == TargetAction.L4) {
+                } else if (SuperstructureSubsystem.getInstance().getGoalState() == SuperstructureState.L4) {
                     currentStatusMode = LEDStatusMode.MAROON_SPARKLE;
                 }
 

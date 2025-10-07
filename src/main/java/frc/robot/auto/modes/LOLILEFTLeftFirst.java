@@ -16,7 +16,7 @@ import frc.robot.commands.arm.ArmCommandFactory;
 import frc.robot.commands.drive.alignment.AlignmentCommandFactory;
 import frc.robot.commands.intake.IntakeCommandFactory;
 import frc.robot.subsystems.ElevatorSubsystem;
-import frc.robot.subsystems.superstructure.SuperstructurePosition.TargetAction;
+import frc.robot.subsystems.superstructure.SuperstructurePosition.SuperstructureState;
 import frc.robot.util.AlignmentCalculator.AlignOffset;
 import frc.robot.util.AlignmentCalculator.FieldElementFace;
 
@@ -63,11 +63,11 @@ public class LOLILEFTLeftFirst extends AutoBase {
         addCommands(new ParallelCommandGroup(
                 followPathCommand(startPath.getChoreoPath()),
                 Commands.sequence(
-                        toPosition(TargetAction.HOME),
+                        toPosition(SuperstructureState.HOME),
                         Commands.waitUntil(
                                 () -> !ElevatorSubsystem.getInstance().isHoming()),
                         new WaitCommand(0.3),
-                        toPosition(TargetAction.L3))));
+                        toPosition(SuperstructureState.L3))));
 
         // align and score preload
         addCommands(Commands.sequence(
@@ -75,12 +75,12 @@ public class LOLILEFTLeftFirst extends AutoBase {
                         AlignmentCommandFactory.getSpecificReefAlignmentCommand(
                                         () -> AlignOffset.LEFT_BRANCH, FieldElementFace.AB)
                                 .withTimeout(2.25),
-                        toPosition(TargetAction.L4)).beforeStarting(new WaitCommand(0.3)),
-                score(TargetAction.L4)));
+                        toPosition(SuperstructureState.L4)).beforeStarting(new WaitCommand(0.3)),
+                score(SuperstructureState.L4)));
 
                 // 1st pickup
         addCommands(
-                toPosition(TargetAction.INTAKE),
+                toPosition(SuperstructureState.INTAKE),
                 ((followPathCommand(loadCenter.getChoreoPath()).beforeStarting(new WaitCommand(0.3)))
                                 .deadlineFor(IntakeCommandFactory.intake().alongWith(ArmCommandFactory.coralIn()))));
                         // .until(haveCoral()));
@@ -92,14 +92,14 @@ public class LOLILEFTLeftFirst extends AutoBase {
                                 AlignmentCommandFactory.getSpecificReefAlignmentCommand(
                                                 () -> AlignOffset.RIGHT_BRANCH, FieldElementFace.AB)
                                         .withTimeout(2.25),
-                                toPosition(TargetAction.L4)).beforeStarting(new WaitCommand(0.3)),
-                        score(TargetAction.L4)),
+                                toPosition(SuperstructureState.L4)).beforeStarting(new WaitCommand(0.3)),
+                        score(SuperstructureState.L4)),
                 new PrintCommand("DIDN'T GET CENTER").andThen(new InstantCommand(() -> setAScored(false))),
                 haveCoral()));
 
         // 2nd pickup
         addCommands(
-                toPosition(TargetAction.INTAKE),
+                toPosition(SuperstructureState.INTAKE),
                 ((followPathCommand(loadLeft.getChoreoPath()).beforeStarting(new WaitCommand(0.3)))
                                 .deadlineFor(IntakeCommandFactory.intake().alongWith(ArmCommandFactory.coralIn())))
         );
@@ -111,13 +111,13 @@ public class LOLILEFTLeftFirst extends AutoBase {
                     Commands.sequence(
                         Commands.parallel(
                             AlignmentCommandFactory.getSpecificReefAlignmentCommand(() -> AlignOffset.LEFT_BRANCH, FieldElementFace.AB).withTimeout(2.25),
-                            toPosition(TargetAction.L2)),
-                        score(TargetAction.L2)), 
+                            toPosition(SuperstructureState.L2)),
+                        score(SuperstructureState.L2)), 
                     Commands.sequence(
                         Commands.parallel(
                             AlignmentCommandFactory.getSpecificReefAlignmentCommand(() -> AlignOffset.LEFT_BRANCH, FieldElementFace.AB).withTimeout(2.25),
-                            toPosition(TargetAction.L4)),
-                        score(TargetAction.L4),
+                            toPosition(SuperstructureState.L4)),
+                        score(SuperstructureState.L4),
                         new InstantCommand(() -> setAScored(true))), 
                     () -> aScored),
             new PrintCommand("DIDN'T GET 1st LOLLIPOP"),
@@ -125,7 +125,7 @@ public class LOLILEFTLeftFirst extends AutoBase {
 
         // 3rd pickup
         addCommands(
-                toPosition(TargetAction.INTAKE),
+                toPosition(SuperstructureState.INTAKE),
                 ((followPathCommand(loadRight.getChoreoPath()).beforeStarting(new WaitCommand(0.3)))
                                 .deadlineFor(IntakeCommandFactory.intake().alongWith(ArmCommandFactory.intake())))
         );
@@ -137,13 +137,13 @@ public class LOLILEFTLeftFirst extends AutoBase {
                     Commands.sequence(
                         Commands.parallel(
                             AlignmentCommandFactory.getSpecificReefAlignmentCommand(() -> AlignOffset.RIGHT_BRANCH, FieldElementFace.AB).withTimeout(2.25),
-                            toPosition(TargetAction.L2)),
-                        score(TargetAction.L2)), 
+                            toPosition(SuperstructureState.L2)),
+                        score(SuperstructureState.L2)), 
                     Commands.sequence(
                         Commands.parallel(
                             AlignmentCommandFactory.getSpecificReefAlignmentCommand(() -> AlignOffset.LEFT_BRANCH, FieldElementFace.AB).withTimeout(2.25),
-                            toPosition(TargetAction.L4)),
-                        score(TargetAction.L4),
+                            toPosition(SuperstructureState.L4)),
+                        score(SuperstructureState.L4),
                         new InstantCommand(() -> setAScored(true))), 
                     () -> aScored),
             new PrintCommand("DIDN'T GET 2nd LOLLIPOP"),
