@@ -79,7 +79,8 @@ public class ArmRollerSubsystem extends SubsystemBase {
     }
 
     public boolean beamBreakHit() {
-        return beamBreak.getVoltage() > 0.4;
+        // return false;
+        return beamBreak.getVoltage() > 0.5;
     }
 
     public boolean getHasCoral() {

@@ -22,6 +22,7 @@ import frc.robot.commands.drive.alignment.AlignmentCommandFactory;
 import frc.robot.commands.intake.IntakeCommandFactory;
 import frc.robot.commands.superstructure.SuperstructureCommandFactory;
 import frc.robot.controlboard.ControlBoard;
+import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.arm.ArmPivotSubsystem;
 import frc.robot.subsystems.arm.ArmRollerSubsystem;
 import frc.robot.subsystems.drive.DrivetrainSubsystem;
@@ -50,6 +51,7 @@ public class RobotContainer {
     public final VisionSubsystem vision = VisionSubsystem.getInstance();
     public final Telemetry telemetry = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
     public final AutoFactory autoFactory = AutoFactory.getInstance();
+    // public final LedSubsystem leds = LedSubsystem.getInstance();
 
     public static boolean deadReckoning = false;
 
@@ -74,9 +76,7 @@ public class RobotContainer {
                 .onTrue(IntakeCommandFactory.setHoldCoral(true))
                 .onFalse(IntakeCommandFactory.setHoldCoral(false));
 
-        // controlBoard.resetGyro().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
-        
-        controlBoard.resetGyro().onTrue(new InstantCommand(() -> drivetrain.getPigeon2().reset()));
+        controlBoard.resetGyro().onTrue(new InstantCommand(() -> drivetrain.seedFieldCentric()));
 
         controlBoard
                 .intake()
@@ -177,11 +177,7 @@ public class RobotContainer {
     }
 
     public Command getAutonomousCommand() {
-        // autoFactory.setCurrentAuto(Auto.LEFT_LOLI_LEFT_FIRST);
-        // autoFactory.recompile();
-        // autoFactory.setCompledAuto(new LOLILEFTLeftFirst());
         return autoFactory.getCompiledAuto();
-        // return new DeadReckoning();
     }
 
     public void precompileAuto() {

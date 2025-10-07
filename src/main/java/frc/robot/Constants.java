@@ -239,7 +239,7 @@ public class Constants {
     public static final double MOTOR_RANGE = 19.568359375; // rotations
     public static final double ENCODER_RANGE = 0.306; // rotations
 
-    public static final Angle ENCODER_OFFSET = Rotations.of(-0.1948046875); // .187
+    public static final Angle ENCODER_OFFSET = Rotations.of(-0.1833); // 0.1948046875
 
     public static final double MIN_INTAKE_ARM_ANGLE = 0;
     public static final double MAX_INTAKE_ARM_ANGLE = 20;
@@ -299,6 +299,7 @@ public class Constants {
   public static final class IntakeRollerConstants {
     public static final boolean MOTOR_INVERTED = false;
     public static final double INTAKE_SPEED = -1.00;
+    public static final double L1_SPEED = -0.65;
     public static final double OUTTAKE_SPEED = 1.00;
     public static final double MAX_RPS = 100;
     public static final double SPIT_TIME = 0.25;
